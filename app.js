@@ -70,7 +70,7 @@ async function diagnostics() {
   const d = { ua: navigator.userAgent, webauthn: typeof PublicKeyCredential !== 'undefined', standalone: navigator.standalone === true };
   try { d.platformAuth = d.webauthn && (await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (e) { d.platformAuth = 'error: ' + e.name; }
   try { await openDb(); d.idb = true; } catch (e) { d.idb = 'error: ' + e.name; }
-  try { d.registered = Boolean((await dbGet('reg')) || (await dbGet('reg-pending'))); } catch (e) { d.registered = 'error: ' + e.name; }
+  try { d.registered = [await dbGet('reg'), await dbGet('reg-pending')].some((r) => Boolean(r && r.receiveKey)); } catch (e) { d.registered = 'error: ' + e.name; }
   return d;
 }
 
@@ -200,8 +200,8 @@ function describe(payload, requests) {
 }
 
 async function approve(ticketId) {
-  const known = (await dbGet('reg')) || (await dbGet('reg-pending'));
-  if (!known || !known.receiveKey) {
+  const usable = [await dbGet('reg'), await dbGet('reg-pending')].some((r) => r && r.receiveKey);
+  if (!usable) {
     // Nothing is sent by itself here: a visitor without a registration cannot use up the ticket.
     show('この画面には登録がありません。', { go: 'この画面の状態を送る', note: '登録したときと同じ開き方で開いてください。' });
     $('go').onclick = async () => {
