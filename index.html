@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://mb-relay.ryuueda08.workers.dev; base-uri 'none'; form-action 'none'">
+<title>承認ページ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>承認ページ</h1>
+  <p id="status">読み込んでいます。</p>
+  <pre id="detail" hidden></pre>
+  <p id="code" hidden></p>
+  <div id="buttons" hidden>
+    <button id="go" type="button">顔認証で通す</button>
+    <button id="no" type="button" class="quiet">通さない</button>
+  </div>
+  <p id="note" class="note" hidden></p>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
