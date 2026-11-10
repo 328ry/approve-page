@@ -14,7 +14,10 @@
   <h1>承認ページ</h1>
   <p id="status">読み込んでいます。</p>
   <pre id="detail" hidden></pre>
-  <p id="code" hidden></p>
+  <div id="codebox" hidden>
+    <label for="codeinput">登録コード</label>
+    <input id="codeinput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
+  </div>
   <div id="buttons" hidden>
     <button id="go" type="button">顔認証で通す</button>
     <button id="no" type="button" class="quiet">通さない</button>
