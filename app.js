@@ -142,10 +142,8 @@ async function openTicket(raw) {
     try { return { reg, blob: await unseal(raw, reg) }; } catch (_) { /* maybe the Mac already uses the new one */ }
   }
   if (pending && pending.receiveKey) {
-    const blob = await unseal(raw, pending);
-    await dbPut('reg', pending);
-    await dbPut('reg-pending', null);
-    return { reg: pending, blob };
+    // Not promoted here: being able to open it proves nothing, anyone can encrypt for a public key.
+    return { reg: pending, blob: await unseal(raw, pending), promote: true };
   }
   throw new Error('この画面の登録では開けない中身です');
 }
@@ -210,12 +208,14 @@ async function approve(ticketId) {
     };
     return;
   }
-  const { reg, blob } = await openTicket(await getTicket(ticketId));
+  const { reg, blob, promote } = await openTicket(await getTicket(ticketId));
   if (blob.type !== 'challenge' || !blob.payload || (blob.payload.purpose !== 'unlock' && blob.payload.purpose !== 'approve')) throw new Error('wrong ticket');
   const payload = blob.payload;
   const macKey = await crypto.subtle.importKey('jwk', reg.macPublicKey, { name: 'Ed25519' }, false, ['verify']);
   const genuine = await crypto.subtle.verify({ name: 'Ed25519' }, macKey, unb64u(blob.macSig), enc.encode(canonical(payload)));
   if (!genuine || payload.guardId !== reg.guardId) { show('中身がMacから来たものか確かめられませんでした。通さないでください。'); return; }
+  // The Mac signed this with the key from the new registration: only now does it replace the old one.
+  if (promote) { await dbPut('reg', reg); await dbPut('reg-pending', null); }
   if (Date.now() >= payload.expiresAt) { show('期限が切れています。もう一度頼み直してください。'); return; }
   let requests = [];
   if (payload.purpose === 'unlock') {
